@@ -4,24 +4,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const messagesContainer = document.getElementById('messages');
 
     sendButton.addEventListener('click', sendMessage);
-
-    userInput.addEventListener('keypress', (event) => {
-        if (event.key === 'Enter') {
-            sendMessage();
-        }
-    });
+    userInput.addEventListener('keypress', event => event.key === 'Enter' && sendMessage());
 
     function sendMessage() {
         const message = userInput.value.trim();
-        if(message) {
+        if (message) {
             addMessage('user', message);
             simulateTypingIndicator();
             setTimeout(() => {
                 const response = generateResponse(message);
                 addMessage('chatbot', response);
                 removeTypingIndicator();
-            }, 1000); // Simulate chatbot typing delay
-            userInput.value = ''; // Clear input after sending
+            }, 1000);
+            userInput.value = '';
         }
     }
 
@@ -50,15 +45,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function generateResponse(input) {
-        // Enhanced response logic
-        if (input.toLowerCase().includes("hello")) {
-            return "Hello! How can I support you today?";
-        } else if (input.toLowerCase().includes("anxious")) {
-            return "It's okay to feel anxious. Let's try some deep breathing together.";
-        } else if (input.toLowerCase().includes("depressed")) {
-            return "I'm here for you. Would you like to talk about what's been on your mind?";
+        // Responses focused on Takotsubo cardiomyopathy
+        input = input.toLowerCase();
+        if (input.includes("hello")) {
+            return "Hello! I'm here to support you. If you're feeling overwhelmed, let's talk about it.";
+        } else if (input.includes("broken heart") || input.includes("takotsubo")) {
+            return "Takotsubo cardiomyopathy, often called 'broken heart syndrome', is a temporary heart condition often brought on by stressful situations. Would you like to know more or discuss your feelings?";
+        } else if (input.includes("symptoms")) {
+            return "Symptoms of Takotsubo cardiomyopathy can mimic a heart attack and may include chest pain, shortness of breath, and an irregular heartbeat. It's important to seek medical attention if you're experiencing these symptoms.";
+        } else if (input.includes("anxious") || input.includes("stressed")) {
+            return "Feeling anxious or stressed can be challenging. Taking deep breaths and finding moments to relax can help. Would you like some tips on relaxation techniques?";
+        } else if (input.includes("help")) {
+            return "It's brave to ask for help. I'm here to listen. Talking about your experiences can be therapeutic. Additionally, reaching out to a healthcare provider can be an important step.";
         } else {
-            return "I want to understand better. Could you tell me more?";
+            return "I'm here to help. Can you tell me a bit more about what you're going through, or how I can assist you?";
         }
     }
 });

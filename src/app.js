@@ -4,19 +4,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const messagesContainer = document.getElementById('messages');
 
     sendButton.addEventListener('click', sendMessage);
-    userInput.addEventListener('keypress', event => event.key === 'Enter' && sendMessage());
+    userInput.addEventListener('keypress', event => {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    });
 
     function sendMessage() {
         const message = userInput.value.trim();
         if (message) {
             addMessage('user', message);
             simulateTypingIndicator();
-            setTimeout(() => {
-                const response = generateResponse(message);
+            // Send the message to the server and wait for a response
+            callChatApi(message).then(response => {
                 addMessage('chatbot', response);
                 removeTypingIndicator();
-            }, 1000);
-            userInput.value = '';
+            }).catch(error => {
+                console.error('Error:', error);
+                addMessage('chatbot', "Sorry, I'm having trouble understanding you right now. Please try again later.");
+                removeTypingIndicator();
+            });
+            userInput.value = ''; // Clear the input after sending
         }
     }
 
@@ -25,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
         messageElement.classList.add('message', author);
         messageElement.innerHTML = `<span>${author === 'user' ? 'You' : 'Chatbot'}:</span> ${message}`;
         messagesContainer.appendChild(messageElement);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        messagesContainer.scrollTop = messagesContainer.scrollHeight; // Auto scroll to the latest message
     }
 
     function simulateTypingIndicator() {
@@ -34,7 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
         typingIndicator.id = 'typing-indicator';
         typingIndicator.innerHTML = '<span></span><span></span><span></span>';
         messagesContainer.appendChild(typingIndicator);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
     function removeTypingIndicator() {
@@ -44,21 +51,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function generateResponse(input) {
-        // Responses focused on Takotsubo cardiomyopathy
-        input = input.toLowerCase();
-        if (input.includes("hello")) {
-            return "Hello! I'm here to support you. If you're feeling overwhelmed, let's talk about it.";
-        } else if (input.includes("broken heart") || input.includes("takotsubo")) {
-            return "Takotsubo cardiomyopathy, often called 'broken heart syndrome', is a temporary heart condition often brought on by stressful situations. Would you like to know more or discuss your feelings?";
-        } else if (input.includes("symptoms")) {
-            return "Symptoms of Takotsubo cardiomyopathy can mimic a heart attack and may include chest pain, shortness of breath, and an irregular heartbeat. It's important to seek medical attention if you're experiencing these symptoms.";
-        } else if (input.includes("anxious") || input.includes("stressed")) {
-            return "Feeling anxious or stressed can be challenging. Taking deep breaths and finding moments to relax can help. Would you like some tips on relaxation techniques?";
-        } else if (input.includes("help")) {
-            return "It's brave to ask for help. I'm here to listen. Talking about your experiences can be therapeutic. Additionally, reaching out to a healthcare provider can be an important step.";
-        } else {
-            return "I'm here to help. Can you tell me a bit more about what you're going through, or how I can assist you?";
-        }
+    function callChatApi(message) {
+        // This is where you would replace with your actual chat service endpoint
+        const chatServiceEndpoint = 'https://karimabdelhamid.github.io/Mental-Health-Support-Chatbot/'; // Placeholder URL
+
+        return fetch(chatServiceEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ message: message })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if(data.reply) {
+                return data.reply;
+            } else {
+                throw new Error('Reply not found in response');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            return "Sorry, I couldn't get a response. Please try again later.";
+        });
     }
 });
